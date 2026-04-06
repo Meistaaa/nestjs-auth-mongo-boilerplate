@@ -3,6 +3,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule, minutes } from '@nestjs/throttler';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { EmailModule } from './modules/email/email.module';
+import { UserModule } from './modules/user/user.module';
 import { BullMqModule } from './queue/bullmq.module';
 import { RedisModule } from './redis/redis.module';
 import { AppLogger } from './logger/app.logger';
@@ -13,7 +16,10 @@ import { RequestLoggerMiddleware } from './logger/request-logger.middleware';
     DatabaseModule,
     RedisModule,
     BullMqModule,
+    EmailModule,
     HealthModule,
+    UserModule,
+    AuthModule,
     ThrottlerModule.forRoot([
       {
         name: 'default',
