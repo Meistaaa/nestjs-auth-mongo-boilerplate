@@ -45,4 +45,57 @@ export class EmailService implements OnModuleInit {
       `,
     });
   }
+
+  sendPasswordResetOtpEmail(
+    to: string,
+    name: string | undefined,
+    otp: string,
+  ): Promise<SentMessageInfo> {
+    const greetingName = name?.trim() || 'there';
+
+    return this.transporter.sendMail({
+      from: getEmailFromAddress(),
+      to,
+      subject: 'Your Africonn password reset code',
+      text: `Hello ${greetingName}, your password reset code is ${otp}. It expires in 10 minutes.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
+          <h2 style="margin-bottom: 12px;">Reset your password</h2>
+          <p>Hello ${greetingName},</p>
+          <p>Your Africonn password reset code is:</p>
+          <div style="font-size: 28px; font-weight: 700; letter-spacing: 6px; margin: 16px 0;">
+            ${otp}
+          </div>
+          <p>This code expires in 10 minutes.</p>
+        </div>
+      `,
+    });
+  }
+
+  sendDeleteAccountOtpEmail(
+    to: string,
+    name: string | undefined,
+    otp: string,
+  ): Promise<SentMessageInfo> {
+    const greetingName = name?.trim() || 'there';
+
+    return this.transporter.sendMail({
+      from: getEmailFromAddress(),
+      to,
+      subject: 'Your Africonn account deletion code',
+      text: `Hello ${greetingName}, your account deletion code is ${otp}. It expires in 10 minutes. If you did not request this, you can ignore this email.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
+          <h2 style="margin-bottom: 12px;">Confirm account deletion</h2>
+          <p>Hello ${greetingName},</p>
+          <p>Your Africonn account deletion code is:</p>
+          <div style="font-size: 28px; font-weight: 700; letter-spacing: 6px; margin: 16px 0;">
+            ${otp}
+          </div>
+          <p>This code expires in 10 minutes.</p>
+          <p>If you did not request account deletion, you can ignore this email.</p>
+        </div>
+      `,
+    });
+  }
 }

@@ -85,6 +85,17 @@ export function buildSwaggerConfig() {
       },
       'bearer',
     )
+    .addCookieAuth(
+      'sid',
+      {
+        type: 'apiKey',
+        in: 'cookie',
+        name: 'sid',
+        description:
+          'Session cookie issued after login/signup when using server-side sessions.',
+      },
+      'session',
+    )
     .addSecurityRequirements('bearer')
     .build();
 }

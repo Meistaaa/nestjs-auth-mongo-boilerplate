@@ -25,7 +25,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
       success: false,
       message: this.getMessage(exceptionResponse, exception),
       error: {
-        code: this.getCode(status),
+        code: status,
+        status: this.getStatus(status),
         details: this.getDetails(exceptionResponse),
       },
       timestamp: new Date().toISOString(),
@@ -71,7 +72,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     return undefined;
   }
 
-  private getCode(status: HttpStatus) {
+  private getStatus(status: HttpStatus) {
     switch (status) {
       case HttpStatus.BAD_REQUEST:
         return 'BAD_REQUEST';

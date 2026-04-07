@@ -1,6 +1,18 @@
-import type SMTPTransport from 'nodemailer/lib/smtp-transport';
+import type * as SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 export interface SendOtpEmailJobData {
+  to: string;
+  name?: string;
+  otp: string;
+}
+
+export interface SendPasswordResetOtpEmailJobData {
+  to: string;
+  name?: string;
+  otp: string;
+}
+
+export interface SendDeleteAccountOtpEmailJobData {
   to: string;
   name?: string;
   otp: string;
@@ -21,28 +33,37 @@ function parseBoolean(value: string | undefined, fallback: boolean) {
 }
 
 export function getEmailTransportOptions(): SMTPTransport.Options {
+  const auth: SMTPTransport.Options['auth'] =
+    process.env.MAIL_USER && process.env.MAIL_PASS
+      ? {
+          user: process.env.MAIL_USER,
+          pass: process.env.MAIL_PASS,
+        }
+      : undefined;
   const host = process.env.MAIL_HOST;
   const port = parseNumber(process.env.MAIL_PORT, 587);
   const secure = parseBoolean(process.env.MAIL_SECURE, false);
   const service = process.env.MAIL_SERVICE || 'gmail';
-  const user = process.env.MAIL_USER;
-  const pass = process.env.MAIL_PASS;
 
   if (host) {
-    return {
+    const options: SMTPTransport.Options = {
       host,
       port,
       secure,
-      auth: user && pass ? { user, pass } : undefined,
+      auth,
     };
+
+    return options;
   }
 
-  return {
+  const options: SMTPTransport.Options = {
     service,
-    auth: user && pass ? { user, pass } : undefined,
+    auth,
   };
+
+  return options;
 }
 
-export function getEmailFromAddress() {
+export function getEmailFromAddress(): string {
   return process.env.MAIL_FROM || process.env.MAIL_USER || 'no-reply@localhost';
 }

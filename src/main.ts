@@ -2,10 +2,9 @@ import './config/load-env';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
-import { RedisStore } from 'connect-redis';
+import MongoStore from 'connect-mongo';
 import session from 'express-session';
 import helmet from 'helmet';
-import type Redis from 'ioredis';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { ResponseTransformInterceptor } from './common/interceptors/response-transform.interceptor';
@@ -15,22 +14,27 @@ import {
 } from './common/swagger/swagger.util';
 import { getServerUrls } from './config/network';
 import { AppLogger } from './logger/app.logger';
-import { REDIS_CLIENT } from './redis/redis.constants';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = app.get(AppLogger);
   const port = Number(process.env.PORT ?? 3000);
-  const docsPath = 'docs';
+  const apiPrefix = 'api/v1';
+  const docsPath = `${apiPrefix}/docs`;
   const isProduction = process.env.ENVIRONMENT === 'production';
+  const { currentIp, localhostUrl, networkUrl } = getServerUrls(port);
 
   app.useLogger(logger);
-
-  const redisClient = app.get<Redis>(REDIS_CLIENT);
+  app.setGlobalPrefix(apiPrefix);
 
   app.use(
     session({
-      store: new RedisStore({ client: redisClient, prefix: 'sess:' }),
+      store: MongoStore.create({
+        mongoUrl: process.env.MONGO_URI,
+        dbName: process.env.DB_NAME,
+        collectionName: 'sessions',
+        stringify: false,
+      }),
       secret: process.env.SESSION_SECRET!,
       resave: false,
       saveUninitialized: false,
@@ -45,7 +49,10 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: process.env.CORS_ORIGIN ?? 'http://localhost:3000',
+    origin: [
+      process.env.CORS_ORIGIN ?? 'http://localhost:3000',
+      'http://localhost:8081',
+    ],
     credentials: true,
   });
   app.use(helmet());
@@ -63,12 +70,24 @@ async function bootstrap() {
   const swaggerDocument = applySwaggerDocumentDefaults(
     SwaggerModule.createDocument(app, swaggerConfig),
   );
+  swaggerDocument.servers = [
+    {
+      url: localhostUrl,
+      description: 'Localhost',
+    },
+    ...(networkUrl
+      ? [
+          {
+            url: networkUrl,
+            description: 'Local network',
+          },
+        ]
+      : []),
+  ];
 
   SwaggerModule.setup(docsPath, app, swaggerDocument);
 
   await app.listen(port);
-
-  const { currentIp, localhostUrl, networkUrl } = getServerUrls(port);
 
   logger.log(`Application running on port ${port}`, 'Bootstrap');
   logger.log(`Local URL: ${localhostUrl}`, 'Bootstrap');

@@ -2,6 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
 export type UserDocument = HydratedDocument<User>;
+const DEFAULT_PROFILE_PICTURE =
+  'https://dummyimage.com/400x400/e5e7eb/6b7280&text=Profile';
 
 @Schema({ timestamps: true })
 export class User {
@@ -20,6 +22,9 @@ export class User {
 
   @Prop({ trim: true })
   phoneNumber?: string;
+
+  @Prop({ trim: true, default: DEFAULT_PROFILE_PICTURE })
+  profilePicture?: string;
 
   // 🔹 Status
   @Prop({ default: false })
@@ -63,6 +68,18 @@ export class User {
 
   @Prop()
   resetPasswordExpires?: Date;
+
+  @Prop()
+  deleteAccountOtp?: string;
+
+  @Prop()
+  deleteAccountOtpExpires?: Date;
+
+  @Prop()
+  deleteAccountToken?: string;
+
+  @Prop()
+  deleteAccountTokenExpires?: Date;
 
   // 🔹 Device Tracking (VERY useful for sessions)
   @Prop()

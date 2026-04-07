@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { SessionGuard } from '../auth/guards/session.guard';
+import { UserController } from './user.controller';
 import { UserRepository } from './user.repository';
 import { User, UserSchema } from './user.schema';
 import { UserService } from './user.service';
@@ -13,7 +15,8 @@ import { UserService } from './user.service';
       },
     ]),
   ],
-  providers: [UserRepository, UserService],
+  controllers: [UserController],
+  providers: [UserRepository, UserService, SessionGuard],
   exports: [UserRepository, UserService],
 })
 export class UserModule {}
